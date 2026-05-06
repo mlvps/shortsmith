@@ -66,7 +66,7 @@ shortsmith stitch      # combine source + clips → final/
 shortsmith dashboard   # web UI on localhost:8765
 ```
 
-In the dashboard: **Connect YouTube** → sign in with the Google account that owns your channel → **Upload now**.
+In the dashboard: **Connect YouTube** → walks you through 6 setup steps with direct deep-links to Google Cloud Console (create project, enable API, configure OAuth consent, create credentials, drag-drop the JSON, click Connect). No CLI commands needed for OAuth.
 
 ## How does the hook generation work?
 
@@ -93,7 +93,7 @@ A single-page web UI on `http://127.0.0.1:8765`:
 - 📜 live tail of all log files
 - 📥 recent uploads with direct YouTube links
 - 🛠️ editable `config.yaml` in-browser
-- 🔗 YouTube **Connect** button that launches OAuth
+- 🔗 **Connect YouTube** wizard: 6 numbered steps with deep-links to the right Google Cloud pages, drag-drop your `client_secret.json`, one-click Connect
 
 ```bash
 shortsmith dashboard --port 8765

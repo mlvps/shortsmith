@@ -129,6 +129,36 @@
   .modal-card label.checkbox { display: flex; align-items: center; gap: 8px; }
   .modal-card label.checkbox input { width: auto; margin: 0; }
   .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
+  .wizard { padding-left: 20px; margin: 0 0 16px; }
+  .wizard li {
+    color: var(--text); font-size: 13px; line-height: 1.7; margin-bottom: 16px;
+  }
+  .wizard li strong { color: var(--text); }
+  .wizard li code {
+    background: var(--panel-2); padding: 1px 6px; border-radius: 4px;
+    font-size: 12px; color: var(--accent);
+  }
+  .wizard .step-btn {
+    display: inline-block; margin-top: 6px; margin-left: 0; padding: 6px 12px;
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 6px;
+    color: var(--accent); text-decoration: none; font-size: 12px; font-weight: 600;
+  }
+  .wizard .step-btn:hover { border-color: var(--accent); }
+  .wizard button.primary {
+    margin-top: 8px; padding: 8px 18px; font-size: 13px;
+  }
+  .dropzone {
+    margin-top: 8px; padding: 24px 16px; text-align: center;
+    border: 2px dashed var(--border); border-radius: 10px;
+    background: var(--panel-2); color: var(--muted); font-size: 12px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .dropzone:hover, .dropzone.dragover {
+    border-color: var(--accent); color: var(--accent);
+    background: rgba(255, 199, 46, 0.05);
+  }
+  .dropzone.has-file { border-color: var(--green); color: var(--green); }
+  .dropzone code { background: var(--bg); padding: 1px 6px; border-radius: 4px; }
 </style>
 </head>
 <body>
@@ -152,9 +182,57 @@
       <button class="primary" onclick="upload()">🚀 Upload now</button>
       <button onclick="run('analyze')">📊 Analyze</button>
       <button onclick="run('healthcheck')">❤️ Health check</button>
-      <button id="connect-btn" onclick="connect()">🔗 Connect YouTube</button>
+      <button id="connect-btn" onclick="openYtModal()">🔗 Connect YouTube</button>
     </div>
   </section>
+
+  <div id="yt-modal" class="modal" hidden>
+    <div class="modal-card" style="max-width: 640px;">
+      <h3>Connect YouTube</h3>
+      <p class="modal-hint">
+        Each user creates their own Google Cloud OAuth client.
+        shortsmith never sees your credentials. Free quota covers 6 uploads/day per project.
+      </p>
+
+      <ol class="wizard">
+        <li>
+          <strong>Create a Google Cloud project</strong> (or pick an existing one).
+          <a href="https://console.cloud.google.com/projectcreate" target="_blank" class="step-btn">Open Cloud Console ↗</a>
+        </li>
+        <li>
+          <strong>Enable YouTube Data API v3.</strong> Click the link, hit "Enable".
+          <a href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank" class="step-btn">Enable API ↗</a>
+        </li>
+        <li>
+          <strong>Configure the OAuth consent screen.</strong>
+          User type: <code>External</code>. Add yourself as a <strong>Test user</strong>.
+          <a href="https://console.cloud.google.com/apis/credentials/consent" target="_blank" class="step-btn">Consent screen ↗</a>
+        </li>
+        <li>
+          <strong>Create OAuth client credentials.</strong>
+          Click <code>+ Create Credentials</code> → <code>OAuth client ID</code> → <strong>Desktop app</strong> → Create → <strong>Download JSON</strong>.
+          <a href="https://console.cloud.google.com/apis/credentials" target="_blank" class="step-btn">Credentials ↗</a>
+        </li>
+        <li>
+          <strong>Drop the downloaded JSON here:</strong>
+          <div id="dropzone" class="dropzone">
+            <span id="dz-label">Drop <code>client_secret_*.json</code> or click to pick</span>
+            <input type="file" id="dz-input" accept=".json,application/json" hidden>
+          </div>
+        </li>
+        <li>
+          <strong>Click Connect.</strong> Browser opens for sign-in. Allow access. Done.
+          <button class="primary" id="yt-connect-btn" onclick="ytConnect()" disabled>Connect</button>
+        </li>
+      </ol>
+
+      <div id="yt-msg" class="modal-status" style="display: none;"></div>
+
+      <div class="modal-actions">
+        <button onclick="closeYtModal()">Close</button>
+      </div>
+    </div>
+  </div>
 
   <div id="hook-modal" class="modal" hidden>
     <div class="modal-card">
@@ -254,14 +332,18 @@ async function refresh() {
   $("connect-btn").style.display = s.yt_connected ? "none" : "inline-block";
 
   let alerts = "";
-  if (!s.has_client_secret) {
-    alerts += `<div class="alert">⚠ Missing <code>client_secret.json</code>. See <code>docs/SETUP.md</code> for OAuth setup steps.</div>`;
+  if (!s.yt_connected) {
+    if (!s.has_client_secret) {
+      alerts += `<div class="alert">⚠ YouTube not connected. <a href="javascript:openYtModal()" style="color: var(--red); text-decoration: underline;">Run the 6-step setup wizard →</a></div>`;
+    } else {
+      alerts += `<div class="alert warn">⚠ <code>client_secret.json</code> ready but no auth token yet. <a href="javascript:openYtModal()" style="color: var(--accent); text-decoration: underline;">Click Connect →</a></div>`;
+    }
   }
   if (!s.template_exists) {
     alerts += `<div class="alert warn">⚠ Template video not found at <code>${s.template_path}</code>. Drop your end-clip there.</div>`;
   }
   if (s.counts.hooks === 0) {
-    alerts += `<div class="alert warn">⚠ No hooks in <code>hooks.json</code>. Generate or write some first.</div>`;
+    alerts += `<div class="alert warn">⚠ No hooks in <code>hooks.json</code>. <a href="javascript:openHookModal()" style="color: var(--accent); text-decoration: underline;">Generate some →</a></div>`;
   }
   $("setup-alert").innerHTML = alerts;
 
@@ -352,6 +434,80 @@ async function saveConfig() {
   });
   const j = await r.json();
   $("cfg-msg").textContent = j.ok ? "saved · " + (j.note || "") : "save failed";
+}
+
+function openYtModal() {
+  $("yt-modal").hidden = false;
+  $("yt-msg").style.display = "none";
+  setupDropzone();
+}
+function closeYtModal() { $("yt-modal").hidden = true; }
+
+function setupDropzone() {
+  const dz = $("dropzone");
+  const inp = $("dz-input");
+  if (dz.dataset.bound) return;
+  dz.dataset.bound = "1";
+  dz.addEventListener("click", () => inp.click());
+  inp.addEventListener("change", (e) => {
+    if (e.target.files[0]) handleSecretFile(e.target.files[0]);
+  });
+  dz.addEventListener("dragover", (e) => { e.preventDefault(); dz.classList.add("dragover"); });
+  dz.addEventListener("dragleave", () => dz.classList.remove("dragover"));
+  dz.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dz.classList.remove("dragover");
+    if (e.dataTransfer.files[0]) handleSecretFile(e.dataTransfer.files[0]);
+  });
+}
+async function handleSecretFile(file) {
+  const fd = new FormData();
+  fd.append("file", file);
+  const r = await fetch("/api/upload-secret", { method: "POST", body: fd });
+  const j = await r.json();
+  const dz = $("dropzone");
+  const lbl = $("dz-label");
+  const msg = $("yt-msg");
+  if (!r.ok) {
+    msg.style.display = "block";
+    msg.className = "modal-status err";
+    msg.textContent = j.error;
+    dz.classList.remove("has-file");
+    lbl.innerHTML = "Drop <code>client_secret_*.json</code> or click to pick";
+    return;
+  }
+  dz.classList.add("has-file");
+  lbl.innerHTML = "✓ saved <code>" + file.name + "</code>";
+  msg.style.display = "block";
+  msg.className = "modal-status ok";
+  msg.textContent = "Saved. Now click Connect.";
+  $("yt-connect-btn").disabled = false;
+}
+async function ytConnect() {
+  const msg = $("yt-msg");
+  msg.style.display = "block";
+  msg.className = "modal-status";
+  msg.textContent = "opening browser for sign-in (this can take 5-15 seconds)...";
+  const r = await fetch("/api/connect-youtube", { method: "POST" });
+  const j = await r.json();
+  if (!r.ok) {
+    msg.className = "modal-status err";
+    msg.textContent = j.error || "failed";
+    return;
+  }
+  pollJob(j.job_id, "youtube connect");
+  // Poll for status change
+  const tick = async () => {
+    const s = await (await fetch("/api/status")).json();
+    if (s.yt_connected) {
+      msg.className = "modal-status ok";
+      msg.textContent = "✓ Connected. You can close this.";
+      refresh();
+      return;
+    }
+    setTimeout(tick, 2000);
+  };
+  setTimeout(tick, 2000);
 }
 
 async function openHookModal() {

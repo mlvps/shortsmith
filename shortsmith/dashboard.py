@@ -182,6 +182,37 @@ def api_llm_providers():
     return jsonify({"installed": llm.installed_providers()})
 
 
+@app.route("/api/upload-secret", methods=["POST"])
+def api_upload_secret():
+    """Drop-zone target for client_secret.json. Validates structure, saves to project root."""
+    c = cfg()
+    if "file" in request.files:
+        f = request.files["file"]
+        try:
+            data = json.loads(f.read().decode("utf-8"))
+        except Exception as e:
+            return jsonify({"error": f"not valid JSON: {e}"}), 400
+    else:
+        try:
+            data = request.get_json(force=True)
+        except Exception:
+            return jsonify({"error": "no file or JSON body"}), 400
+
+    # Validate it looks like a Google OAuth desktop client.
+    block = data.get("installed") or data.get("web")
+    if not block or "client_id" not in block or "client_secret" not in block:
+        return jsonify({
+            "error": "not a Google OAuth client_secret. Expected key 'installed' or 'web' with 'client_id' + 'client_secret'."
+        }), 400
+    if "installed" not in data:
+        return jsonify({
+            "error": "Google client type is 'web' but shortsmith needs 'Desktop app'. Recreate the OAuth client as Desktop app."
+        }), 400
+
+    c.client_secret_path.write_text(json.dumps(data, indent=2))
+    return jsonify({"ok": True, "saved_to": str(c.client_secret_path)})
+
+
 @app.route("/api/job/<job_id>")
 def api_job(job_id: str):
     job = _jobs.get(job_id)
