@@ -143,7 +143,7 @@ def main(cfg: config.Config, args: argparse.Namespace) -> None:
         uploaded["uploaded_indices"], cfg.priority_path,
     )
     if not indices:
-        print("queue empty — nothing left to upload")
+        print("queue empty, nothing left to upload")
         return
 
     yt = auth_youtube(cfg)

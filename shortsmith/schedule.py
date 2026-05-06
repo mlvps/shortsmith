@@ -5,7 +5,7 @@
   - Windows → Task Scheduler (schtasks)
 
 The schedule itself comes from config.yaml:
-  upload.schedule_hours    (list of hours for daily upload — 1 video per slot)
+  upload.schedule_hours    (list of hours for daily upload, 1 video per slot)
   weekly_analyze_day       (0=Sunday … 6=Saturday) defaults to 0
   weekly_analyze_hour      (default 10)
   healthcheck_day          (default 1=Monday)

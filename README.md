@@ -30,12 +30,13 @@ One end-clip → 500 hook variations → daily auto-uploads → weekly winner am
 
 Most "auto-shorts" tools cost $19-$49/month and slap the same caption on every video. shortsmith is the **open source version**, with the things they hide:
 
-- 🎯 **Per-video unique hooks + CTAs** — not just template fill-in. Brand-color highlight boxes (yellow/green/purple), Gen-Z TikTok voice, all lowercase, no em-dashes.
-- 🔁 **Self-pacing winner amplification** — weekly agent reads your YouTube stats, finds your top performers, bumps semantically-similar hooks to the front of the queue.
-- 🧵 **Stitch any source channel** — pulls Shorts via yt-dlp, normalizes to 9:16, concatenates first 5.5s with your end-clip.
-- 🤖 **Auto-posts on a schedule** — 3 uploads per day at peak times. macOS, Linux, or Windows. Free YouTube Data API tier.
-- 📊 **Local web dashboard** — every pipeline step has a button. Live logs. One-click "Connect YouTube" OAuth. Editable config in-browser.
-- 📱 **Push notifications** — free via [ntfy.sh](https://ntfy.sh) when winners are detected or jobs fail.
+- 🎯 **Per-video unique hooks + CTAs**, not just template fill-in. Brand-color highlight boxes (yellow/green/purple), Gen-Z TikTok voice, all lowercase.
+- 🧠 **Generates the hooks for you** via your existing Claude / ChatGPT / Gemini / Ollama CLI subscription. **No API key required.** No per-token costs.
+- 🔁 **Self-pacing winner amplification**, weekly agent reads your YouTube stats, finds your top performers, bumps semantically-similar hooks to the front of the queue.
+- 🧵 **Stitch any source channel**, pulls Shorts via yt-dlp, normalizes to 9:16, concatenates first 5.5s with your end-clip.
+- 🤖 **Auto-posts on a schedule**, 3 uploads per day at peak times. macOS, Linux, or Windows. Free YouTube Data API tier.
+- 📊 **Local web dashboard**, every pipeline step has a button. Live logs. One-click "Connect YouTube" OAuth. Editable config in-browser.
+- 📱 **Push notifications**, free via [ntfy.sh](https://ntfy.sh) when winners are detected or jobs fail.
 
 No SaaS. No subscriptions. No vendor lock-in. ~1500 lines of Python.
 
@@ -57,16 +58,30 @@ shortsmith init
 
 # 1. drop your end-clip here:  ./template/template.mov
 # 2. edit config.yaml          (channel URL, brand colors, ntfy topic)
-# 3. write hooks.json          (see examples/hooks_example.json
-#                               or docs/PROMPT_HOOK_GEN.md to LLM-generate)
 
-shortsmith download    # pull source content
-shortsmith generate    # render N end-clip variants
+shortsmith hooks --count 100 --brand "bo" --theme "summer body, abs by june"
+shortsmith download    # pull source content via yt-dlp
+shortsmith generate    # render hook+CTA end-clip variants
 shortsmith stitch      # combine source + clips → final/
 shortsmith dashboard   # web UI on localhost:8765
 ```
 
 In the dashboard: **Connect YouTube** → sign in with the Google account that owns your channel → **Upload now**.
+
+## How does the hook generation work?
+
+shortsmith does not call any LLM API. There is no API key to manage, no per-token cost. It detects whichever LLM CLI you already have installed and pipes the prompt into it as a subprocess.
+
+| Provider | CLI | Backed by |
+|---|---|---|
+| **Claude Code** | `claude -p` | Your Claude Pro / Max subscription |
+| **OpenAI Codex CLI** | `codex exec` | Your ChatGPT Plus subscription |
+| **Google Gemini CLI** | `gemini` | Your Google AI Studio key |
+| **Ollama** | `ollama run` | Fully local, offline |
+
+`shortsmith hooks --provider auto` picks the first one installed. Output is parsed, validated, and written to `hooks.json`. The dashboard has a **Generate hooks** button that opens a form: brand name, theme, count, provider. No CLI needed if you'd rather click.
+
+If no CLI is installed, shortsmith prints install instructions and exits. Pick whichever provider you already pay for, you do not pay shortsmith twice.
 
 ## Dashboard
 
@@ -74,6 +89,7 @@ A single-page web UI on `http://127.0.0.1:8765`:
 
 - 📊 pipeline stats (hooks, sources, clips, stitched, uploaded)
 - ▶️ one-click trigger for every step
+- ✍️ **Generate hooks** button (auto-detects your installed LLM CLI, no API key)
 - 📜 live tail of all log files
 - 📥 recent uploads with direct YouTube links
 - 🛠️ editable `config.yaml` in-browser
@@ -105,12 +121,12 @@ Stop anytime: `shortsmith schedule uninstall`. Status: `shortsmith schedule stat
 
 ## Niche guide (this is 70% of the result)
 
-The "source channel" is your hook half — it determines whether someone stops scrolling. Pick one with **fast-paced, attention-grabbing, transformative content**:
+The "source channel" is your hook half, it determines whether someone stops scrolling. Pick one with **fast-paced, attention-grabbing, transformative content**:
 
-- 🧪 **3D explainer animations** — `@AlphaPhoenixVideos`, `@TheActionLab`
-- ✨ **oddly satisfying** — `@OddlySatisfying`, pressure-washing channels
-- 💃 **dance / movement** — high-energy compilation channels
-- 🪚 **skill compilations** — woodworking, cooking, sushi rolling
+- 🧪 **3D explainer animations**
+- ✨ **satisfying videos** (cleaning, slime, pressure-washing, marble runs)
+- 💃 **female dancing**
+- 🪚 **skill compilations** (woodworking, cooking, sushi rolling)
 
 [**Full niche guide →**](docs/NICHE_GUIDE.md)
 
@@ -155,7 +171,7 @@ This tool downloads content from another creator's channel and combines it with 
 
 **Use responsibly:**
 - Respect the source creators. Don't pretend their work is yours.
-- Add real, transformative value — your end-clip should feel like a continuation, not a tag-on.
+- Add real, transformative value, your end-clip should feel like a continuation, not a tag-on.
 - Don't be surprised if YouTube flags or removes a video. The enforcement is opaque and inconsistent. Keep your channel diversified.
 - Don't run this on accounts you can't afford to lose.
 
@@ -175,11 +191,11 @@ This software is provided as-is, for educational and experimentation purposes. *
 - [ ] Docker image for self-hosting
 - [ ] systemd unit alternative for headless Linux servers
 
-[**Open an issue**](https://github.com/mlvps/shortsmith/issues/new) if you want to contribute. PRs welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
+[**Open an issue**](https://github.com/mlvps/shortsmith/issues/new) if you want to contribute. PRs welcome, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Show off your campaign
 
-If you ship something with shortsmith, **drop a link in the [Show & Tell discussion](https://github.com/mlvps/shortsmith/discussions)** — I'll boost it on Twitter.
+If you ship something with shortsmith, **drop a link in the [Show & Tell discussion](https://github.com/mlvps/shortsmith/discussions)**, I'll boost it on Twitter.
 
 ## License
 

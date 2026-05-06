@@ -102,7 +102,7 @@ def main(cfg: config.Config, args=None) -> None:
         vid = entry["video_id"]
         item = stats.get(vid)
         if not item:
-            strikes.append({"video_id": vid, "reason": "missing — possibly removed",
+            strikes.append({"video_id": vid, "reason": "missing, possibly removed",
                             "hook": entry["hook"]})
             continue
         s = item.get("statistics", {})
@@ -175,7 +175,7 @@ def main(cfg: config.Config, args=None) -> None:
     avg_views = total_views / max(len(rows), 1)
 
     lines = [
-        f"# Report — {ts}", "",
+        f"# Report, {ts}", "",
         f"- Videos analyzed: **{len(rows)}**",
         f"- Total views: **{total_views:,}**",
         f"- Avg views per video: **{avg_views:.1f}**",
@@ -193,7 +193,7 @@ def main(cfg: config.Config, args=None) -> None:
     if winners:
         lines += ["", "## Winners", ""]
         for w in winners:
-            lines.append(f"- **{w['score']}** — {w['hook']}  → https://youtube.com/shorts/{w['video_id']}")
+            lines.append(f"- **{w['score']}**, {w['hook']}  → https://youtube.com/shorts/{w['video_id']}")
     if amplified:
         lines += ["", "## Amplifications added to priority queue", ""]
         for a in amplified:
@@ -201,7 +201,7 @@ def main(cfg: config.Config, args=None) -> None:
     if strikes:
         lines += ["", "## Strikes / issues", ""]
         for s in strikes:
-            lines.append(f"- {s['video_id']} — {s['reason']} — {s.get('hook','')}")
+            lines.append(f"- {s['video_id']}, {s['reason']}, {s.get('hook','')}")
     report_path.write_text("\n".join(lines))
     print(f"report → {report_path}")
 

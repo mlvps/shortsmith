@@ -47,7 +47,7 @@ def cmd_init(args) -> None:
     cfg_target = cwd / "config.yaml"
     if not cfg_target.exists():
         shutil.copy2(pkg_root / "config.example.yaml", cfg_target)
-        print("created: config.yaml — edit it to customize")
+        print("created: config.yaml, edit it to customize")
     for d in ["template", "source", "out", "final", "reports"]:
         (cwd / d).mkdir(exist_ok=True)
     print("\nNext steps:")
@@ -108,6 +108,12 @@ def cmd_schedule(args) -> None:
     schedule.dispatch(cfg, args)
 
 
+def cmd_hooks(args) -> None:
+    from . import llm
+    cfg = config.load(args.config)
+    llm.main(cfg, args)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(prog="shortsmith",
                                  description="Open-source viral-shorts pipeline")
@@ -121,7 +127,7 @@ def main() -> None:
     p.add_argument("--channel", default=None)
     p.add_argument("--count", type=int, default=None)
     p.add_argument("--cookies-browser", default=None,
-                   help="e.g. safari, brave, edge — only if YT bot-blocks you")
+                   help="e.g. safari, brave, edge, only if YT bot-blocks you")
     p.set_defaults(func=cmd_download)
 
     p = sub.add_parser("generate", help="render hook+CTA end-clips")
@@ -159,6 +165,24 @@ def main() -> None:
     p = sub.add_parser("schedule", help="manage launchd jobs")
     p.add_argument("action", choices=["install", "uninstall", "status"])
     p.set_defaults(func=cmd_schedule)
+
+    p = sub.add_parser("hooks", help="generate hooks.json via your local LLM CLI")
+    p.add_argument("--count", type=int, default=100,
+                   help="how many hook+CTA pairs to generate")
+    p.add_argument("--provider", default="auto",
+                   choices=["auto", "claude", "codex", "gemini", "ollama"],
+                   help="which LLM CLI to use (auto picks the first installed)")
+    p.add_argument("--model", default=None,
+                   help="model name (only used by ollama, e.g. llama3.1)")
+    p.add_argument("--product", default=None,
+                   help='your product description, e.g. "a peptide tracking app"')
+    p.add_argument("--theme", default=None,
+                   help='campaign theme, e.g. "summer body, abs by june"')
+    p.add_argument("--brand", default=None,
+                   help='brand name to feature in CTAs, e.g. "bo"')
+    p.add_argument("--append", action="store_true",
+                   help="append to existing hooks.json instead of replacing")
+    p.set_defaults(func=cmd_hooks)
 
     args = ap.parse_args()
     args.func(args)

@@ -94,6 +94,41 @@
     border: 1px solid var(--border); border-radius: 8px; padding: 12px;
     font-family: "SF Mono", Menlo, monospace; font-size: 12px; line-height: 1.5;
   }
+  .modal {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.65); display: flex;
+    align-items: center; justify-content: center; z-index: 100;
+  }
+  .modal[hidden] { display: none; }
+  .modal-card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 12px; padding: 28px 32px; width: 100%; max-width: 540px;
+    max-height: 90vh; overflow-y: auto;
+  }
+  .modal-card h3 { margin: 0 0 8px; font-size: 16px; }
+  .modal-hint { color: var(--muted); font-size: 13px; margin: 0 0 16px; line-height: 1.6; }
+  .modal-status {
+    background: var(--panel-2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 14px; margin-bottom: 16px;
+    font-size: 12px; color: var(--muted);
+  }
+  .modal-status.ok { border-color: var(--green); color: var(--green); }
+  .modal-status.err { border-color: var(--red); color: var(--red); }
+  .modal-card label {
+    display: block; margin-bottom: 14px; color: var(--text); font-size: 13px;
+  }
+  .modal-card label small { color: var(--muted); font-weight: 400; }
+  .modal-card input[type="text"], .modal-card input[type="number"],
+  .modal-card input:not([type]), .modal-card select {
+    display: block; width: 100%; margin-top: 6px; padding: 9px 12px;
+    background: #07080a; color: var(--text); border: 1px solid var(--border);
+    border-radius: 6px; font-size: 13px; font-family: inherit;
+  }
+  .modal-card input:focus, .modal-card select:focus { border-color: var(--accent); outline: none; }
+  .modal-row { display: flex; gap: 12px; }
+  .modal-row label { flex: 1; }
+  .modal-card label.checkbox { display: flex; align-items: center; gap: 8px; }
+  .modal-card label.checkbox input { width: auto; margin: 0; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
 </style>
 </head>
 <body>
@@ -110,8 +145,9 @@
   <section>
     <h2>Pipeline actions</h2>
     <div class="row">
+      <button onclick="openHookModal()">✍️ Generate hooks</button>
       <button onclick="run('download')">📥 Download source</button>
-      <button onclick="run('generate')">🎨 Generate clips</button>
+      <button onclick="run('generate')">🎨 Render clips</button>
       <button onclick="run('stitch')">🪡 Stitch finals</button>
       <button class="primary" onclick="upload()">🚀 Upload now</button>
       <button onclick="run('analyze')">📊 Analyze</button>
@@ -119,6 +155,47 @@
       <button id="connect-btn" onclick="connect()">🔗 Connect YouTube</button>
     </div>
   </section>
+
+  <div id="hook-modal" class="modal" hidden>
+    <div class="modal-card">
+      <h3>Generate hooks</h3>
+      <p class="modal-hint">
+        shortsmith spawns your local LLM CLI (no API key needed). It uses your
+        existing Claude Pro / ChatGPT Plus / Gemini / Ollama subscription.
+      </p>
+      <div id="llm-status" class="modal-status"></div>
+      <label>Brand name <small>(highlighted purple in CTAs)</small>
+        <input id="hk-brand" placeholder="e.g. bo">
+      </label>
+      <label>Theme <small>(what the campaign is about)</small>
+        <input id="hk-theme" placeholder="e.g. summer body, abs by june">
+      </label>
+      <label>Product description <small>(used in prompt context)</small>
+        <input id="hk-product" placeholder="e.g. a peptide tracking app">
+      </label>
+      <div class="modal-row">
+        <label>Count
+          <input id="hk-count" type="number" value="100" min="1" max="500">
+        </label>
+        <label>Provider
+          <select id="hk-provider">
+            <option value="auto">auto (first installed)</option>
+            <option value="claude">claude</option>
+            <option value="codex">codex</option>
+            <option value="gemini">gemini</option>
+            <option value="ollama">ollama</option>
+          </select>
+        </label>
+        <label class="checkbox">
+          <input id="hk-append" type="checkbox"> append to existing
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button onclick="closeHookModal()">Cancel</button>
+        <button class="primary" onclick="runHooks()">Generate</button>
+      </div>
+    </div>
+  </div>
 
   <section>
     <h2>Recent uploads</h2>
@@ -275,6 +352,48 @@ async function saveConfig() {
   });
   const j = await r.json();
   $("cfg-msg").textContent = j.ok ? "saved · " + (j.note || "") : "save failed";
+}
+
+async function openHookModal() {
+  $("hook-modal").hidden = false;
+  const r = await fetch("/api/llm-providers");
+  const j = await r.json();
+  const status = $("llm-status");
+  if (!j.installed.length) {
+    status.className = "modal-status err";
+    status.innerHTML = `No LLM CLI detected. Install one (uses your existing subscription, no API key):
+    <ul style="margin: 6px 0 0; padding-left: 18px;">
+      <li><a href="https://claude.ai/code" target="_blank">Claude Code</a> (uses Claude Pro/Max)</li>
+      <li><code>npm i -g @openai/codex</code> (uses ChatGPT Plus)</li>
+      <li><code>npm i -g @google/gemini-cli</code> (uses Google AI Studio)</li>
+      <li><a href="https://ollama.com/download" target="_blank">Ollama</a> (local, fully offline)</li>
+    </ul>`;
+  } else {
+    status.className = "modal-status ok";
+    status.textContent = "Detected: " + j.installed.join(", ");
+  }
+}
+function closeHookModal() { $("hook-modal").hidden = true; }
+async function runHooks() {
+  const body = {
+    count: parseInt($("hk-count").value, 10) || 100,
+    provider: $("hk-provider").value,
+    brand: $("hk-brand").value.trim(),
+    theme: $("hk-theme").value.trim(),
+    product: $("hk-product").value.trim(),
+    append: $("hk-append").checked,
+  };
+  if (!body.brand) { alert("Brand name required."); return; }
+  if (!body.theme) { alert("Theme required."); return; }
+  closeHookModal();
+  toast(`generating ${body.count} hooks via ${body.provider}…`);
+  const r = await fetch("/api/run/hooks", {
+    method: "POST", headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(body),
+  });
+  if (!r.ok) { toast("failed to start", false); return; }
+  const j = await r.json();
+  pollJob(j.job_id, "hooks");
 }
 
 refresh();

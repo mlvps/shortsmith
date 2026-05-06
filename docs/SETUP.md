@@ -42,9 +42,35 @@ This creates `config.yaml`, `hooks.json` example, and the directory tree.
 
 Save your raw end-clip to `./template/template.mov` (or whatever you set in config). Roughly 5-8 seconds. shortsmith will pad anything narrower than 9:16 with a white caption box on top.
 
-## 4. Write your hooks
+## 4. Generate your hooks
 
-Edit `hooks.json`. Each entry:
+shortsmith uses your existing LLM CLI subscription (no API key needed). Install whichever you already pay for:
+
+| Provider | Install | Backed by |
+|---|---|---|
+| Claude Code | https://claude.ai/code | Claude Pro / Max plan |
+| OpenAI Codex CLI | `npm i -g @openai/codex` | ChatGPT Plus plan |
+| Google Gemini CLI | `npm i -g @google/gemini-cli` | Google AI Studio key |
+| Ollama | https://ollama.com/download | Fully local, offline |
+
+Then generate:
+
+```bash
+shortsmith hooks --count 100 \
+  --brand "bo" \
+  --theme "summer body, abs by june" \
+  --product "a peptide tracking app"
+```
+
+`--provider auto` (default) picks the first installed CLI. Override with `--provider claude|codex|gemini|ollama` if you want a specific one.
+
+Output goes to `hooks.json`. shortsmith parses + validates the LLM output before writing. Bad entries are dropped silently.
+
+You can also trigger this from the dashboard: **Generate hooks** button opens a form (brand, theme, count, provider).
+
+### Manual hooks
+
+If you'd rather write hooks by hand, edit `hooks.json` directly. Each entry:
 
 ```json
 {
@@ -59,24 +85,22 @@ Edit `hooks.json`. Each entry:
 ```
 
 Rules:
-- All lowercase, no em-dashes (`—`), Gen-Z TikTok voice
+- All lowercase, no em-dashes, Gen-Z TikTok voice
 - `hl` values come from `highlight_colors` in `config.yaml` (default: yellow/green/purple)
 - The renderer auto-appends `cta_suffix` from config (e.g., `(it's on the app store)`)
-- Punctuation goes in the unhighlighted "connector" segments — never inside an `hl` segment
+- Punctuation goes in the unhighlighted "connector" segments, never inside an `hl` segment
 
 See `examples/hooks_example.json` for ~10 templates you can adapt.
-
-For 100+ hooks, ask any LLM to generate them in this exact format. Sample prompt is in `docs/PROMPT_HOOK_GEN.md`.
 
 ## 5. Edit `config.yaml`
 
 Set:
-- `source.channel_url` — the channel whose Shorts you'll use as hooks
-- `caption.font_path` — point to a TTF on your system (default works on macOS)
-- `highlight_colors` — your brand colors as `[R, G, B]`
-- `cta_suffix` — your call-to-action footer
-- `upload.schedule_hours` — when to post each day
-- `ntfy.topic` — for push notifications (optional)
+- `source.channel_url`, the channel whose Shorts you'll use as hooks
+- `caption.font_path`, point to a TTF on your system (default works on macOS)
+- `highlight_colors`, your brand colors as `[R, G, B]`
+- `cta_suffix`, your call-to-action footer
+- `upload.schedule_hours`, when to post each day
+- `ntfy.topic`, for push notifications (optional)
 
 ## 6. YouTube OAuth credentials
 
@@ -107,7 +131,7 @@ mv ~/Downloads/client_secret_*.json ./client_secret.json
 shortsmith upload --count 1 --privacy private
 ```
 
-A browser window opens. Sign in with the Google account that owns your YouTube channel, click **Allow**. A `token.json` is saved — you won't be prompted again.
+A browser window opens. Sign in with the Google account that owns your YouTube channel, click **Allow**. A `token.json` is saved, you won't be prompted again.
 
 The first test upload posts as private. Verify it on your channel; delete if you want.
 
@@ -125,7 +149,7 @@ shortsmith detects your OS and installs the right scheduler:
 
 You should see three job entries either way (1 daily upload + 1 weekly analyze + 1 weekly health check).
 
-### macOS Full Disk Access (important — macOS only)
+### macOS Full Disk Access (important, macOS only)
 
 If your project lives in `~/Documents/`, `~/Desktop/`, or `~/Downloads/`, macOS TCC will block launchd from reading your Python scripts. You'll see "Operation not permitted" in `upload.err`.
 
@@ -135,7 +159,7 @@ If your project lives in `~/Documents/`, `~/Desktop/`, or `~/Downloads/`, macOS 
 shortsmith schedule uninstall && shortsmith schedule install
 ```
 
-Or move the project outside protected folders (`~/projects/my-campaign`) — TCC doesn't gate non-Documents paths.
+Or move the project outside protected folders (`~/projects/my-campaign`), TCC doesn't gate non-Documents paths.
 
 ### Linux: machine must be running at trigger times
 
@@ -155,7 +179,7 @@ Tasks created by `schtasks` default to running only while you're signed in. To r
    ntfy:
      topic: "shortsmith-yourname-7k9q2x"
    ```
-5. Test: `shortsmith healthcheck` — you should get a push within a few seconds
+5. Test: `shortsmith healthcheck`, you should get a push within a few seconds
 
 ## 9. Done
 

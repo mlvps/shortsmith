@@ -4,13 +4,13 @@
 
 macOS TCC blocking launchd from reading your project. Two fixes:
 
-**Option A — grant Full Disk Access to python3** (recommended):
+**Option A, grant Full Disk Access to python3** (recommended):
 1. System Settings → Privacy & Security → Full Disk Access
 2. Click **+** → press **⌘ Shift G** → type `/usr/bin/python3` → click Open
 3. Toggle on
 4. Restart the jobs: `shortsmith schedule uninstall && shortsmith schedule install`
 
-**Option B — move the project**:
+**Option B, move the project**:
 ```bash
 mv ~/Documents/my-campaign ~/projects/my-campaign
 cd ~/projects/my-campaign
@@ -23,9 +23,9 @@ TCC only protects `~/Documents`, `~/Desktop`, `~/Downloads`, iCloud Drive, Pictu
 
 YouTube's bot detection got triggered. Three fixes, in order of preference:
 
-1. **Wait 30 minutes** — most rate-limits clear quickly
-2. **Lower parallelism** — set `source.download_parallel: 1` in config and add `--sleep-interval 5 --max-sleep-interval 10`
-3. **Pass cookies** — sign in to YouTube on Safari (or a supported browser), then:
+1. **Wait 30 minutes**, most rate-limits clear quickly
+2. **Lower parallelism**, set `source.download_parallel: 1` in config and add `--sleep-interval 5 --max-sleep-interval 10`
+3. **Pass cookies**, sign in to YouTube on Safari (or a supported browser), then:
    ```bash
    shortsmith download --cookies-browser safari
    ```
@@ -34,7 +34,7 @@ YouTube's bot detection got triggered. Three fixes, in order of preference:
 
 ## OAuth: "this app isn't verified"
 
-You're in test mode. Click **Advanced** → **Go to {app name} (unsafe)** → Allow. This is fine — the OAuth scope is just YouTube upload, and you're the only test user.
+You're in test mode. Click **Advanced** → **Go to {app name} (unsafe)** → Allow. This is fine, the OAuth scope is just YouTube upload, and you're the only test user.
 
 To remove the warning permanently, you'd have to submit your app for Google verification (~weeks). Not worth it for personal use.
 
@@ -50,7 +50,7 @@ The button calls `shortsmith upload --count 1 --privacy private` to trigger OAut
 
 ## Videos render but audio is silent
 
-`ffprobe ./final/final_0000.mp4` — if you see `codec_type=audio` listed but it's silent, your `template.mov` has no audio. ffmpeg will pad with silence; that's expected. If you want music, drop a track in your template before pulling it through generate.
+`ffprobe ./final/final_0000.mp4`, if you see `codec_type=audio` listed but it's silent, your `template.mov` has no audio. ffmpeg will pad with silence; that's expected. If you want music, drop a track in your template before pulling it through generate.
 
 ## Stitched video has black bars
 
@@ -72,7 +72,7 @@ If the job is listed but fires at the wrong time: macOS waits for system wake be
 
 1. Make sure the topic in `config.yaml` matches the topic you subscribed to in the app (case-sensitive).
 2. Test directly: `curl -d "test" ntfy.sh/your-topic-name`
-3. Some carriers throttle ntfy notifications when your phone is on cellular only — try Wi-Fi first.
+3. Some carriers throttle ntfy notifications when your phone is on cellular only, try Wi-Fi first.
 
 ## Hooks render with weird character spacing
 

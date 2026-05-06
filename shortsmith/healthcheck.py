@@ -80,7 +80,7 @@ def main(cfg: config.Config, args=None) -> int:
 
     upload_age = hours_since_mtime(upload_log)
     if upload_age is None:
-        notes.append("upload.log missing — no daily run yet")
+        notes.append("upload.log missing, no daily run yet")
     elif upload_age > UPLOAD_LOG_MAX_AGE_HOURS:
         issues.append(f"upload.log stale: {upload_age:.1f}h old")
     else:
@@ -88,7 +88,7 @@ def main(cfg: config.Config, args=None) -> int:
 
     analyze_age = hours_since_mtime(analyze_log)
     if analyze_age is None:
-        notes.append("analyze.log missing — first weekly run pending")
+        notes.append("analyze.log missing, first weekly run pending")
     elif analyze_age > ANALYZE_LOG_MAX_AGE_HOURS:
         issues.append(f"analyze.log stale: {analyze_age:.1f}h old")
     else:

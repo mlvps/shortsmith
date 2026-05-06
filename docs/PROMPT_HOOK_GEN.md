@@ -3,7 +3,7 @@
 Paste this into Claude / GPT-4 / any decent LLM to generate hooks for your campaign. Adjust the bracketed sections to match your product.
 
 ```
-Write 100 hook+CTA pairs for a TikTok body-transformation campaign for [YOUR PRODUCT — e.g., "a peptide tracking app called Bo"]. Each pair will be stitched onto a viral short and posted to TikTok/YouTube Shorts.
+Write 100 hook+CTA pairs for a TikTok body-transformation campaign for [YOUR PRODUCT, e.g., "a peptide tracking app called Bo"]. Each pair will be stitched onto a viral short and posted to TikTok/YouTube Shorts.
 
 Output format: a JSON array. Each entry MUST be:
 
@@ -20,19 +20,19 @@ The renderer auto-appends "[YOUR CTA SUFFIX, e.g., ' (it's on the app store)']" 
 
 # Hook rules
 - All lowercase, no exceptions
-- NO em-dashes (—) anywhere
-- Gen-Z TikTok voice — slang OK ("bro", "lowkey", "ngl", "fr", "no shot", "you cooked")
-- Body-shame angle for fitness, finance-shame for money apps, productivity-shame for habit apps — make the user feel a tiny pang
-- Punchy, not whiny — under 90 chars where possible
+- NO em-dashes anywhere
+- Gen-Z TikTok voice, slang OK ("bro", "lowkey", "ngl", "fr", "no shot", "you cooked")
+- Body-shame angle for fitness, finance-shame for money apps, productivity-shame for habit apps, make the user feel a tiny pang
+- Punchy, not whiny, under 90 chars where possible
 - Variety: don't repeat phrases. Mix questions, statements, callouts.
-- Tied to [YOUR THEME — e.g., "summer body, looking shredded, abs by june"]
+- Tied to [YOUR THEME, e.g., "summer body, looking shredded, abs by june"]
 
 # CTA rules
-- Short and provocative — 4 to 9 words before the auto-suffix
+- Short and provocative, 4 to 9 words before the auto-suffix
 - All lowercase, no em-dashes
 - Must thematically tie to the hook
 - Vary the verbs: track, log, lock in, stop coping, fix it, dial in, hit your stack
-- ALWAYS reference your brand name somewhere — usually highlighted purple
+- ALWAYS reference your brand name somewhere, usually highlighted purple
 - Highlight 1 or 2 important words per CTA via "hl":
   - "yellow" = power verbs / commands (track, log, lock in)
   - "green" = aspirational outcomes (get shredded, lean, ripped)

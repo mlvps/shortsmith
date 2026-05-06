@@ -142,24 +142,44 @@ def _start_job(name: str, argv: list[str]) -> str:
 def api_run(action: str):
     c = cfg()
     py = sys.executable
+    base = [py, "-m", "shortsmith.cli", "-c", str(c.project_root / "config.yaml")]
+    body = request.get_json(silent=True) or {}
+
     actions = {
-        "download": [py, "-m", "shortsmith.cli", "-c", str(c.project_root / "config.yaml"),
-                     "download"],
-        "generate": [py, "-m", "shortsmith.cli", "-c", str(c.project_root / "config.yaml"),
-                     "generate"],
-        "stitch":   [py, "-m", "shortsmith.cli", "-c", str(c.project_root / "config.yaml"),
-                     "stitch"],
-        "upload":   [py, "-m", "shortsmith.cli", "-c", str(c.project_root / "config.yaml"),
-                     "upload", "--count", str(int(request.json.get("count", 1)) if request.is_json else 1)],
-        "analyze":  [py, "-m", "shortsmith.cli", "-c", str(c.project_root / "config.yaml"),
-                     "analyze"],
-        "healthcheck": [py, "-m", "shortsmith.cli", "-c", str(c.project_root / "config.yaml"),
-                        "healthcheck"],
+        "download": base + ["download"],
+        "generate": base + ["generate"],
+        "stitch":   base + ["stitch"],
+        "upload":   base + ["upload", "--count", str(int(body.get("count", 1)))],
+        "analyze":  base + ["analyze"],
+        "healthcheck": base + ["healthcheck"],
     }
+    if action == "hooks":
+        argv = base + ["hooks",
+                       "--count", str(int(body.get("count", 100))),
+                       "--provider", body.get("provider", "auto")]
+        if body.get("brand"):
+            argv += ["--brand", body["brand"]]
+        if body.get("theme"):
+            argv += ["--theme", body["theme"]]
+        if body.get("product"):
+            argv += ["--product", body["product"]]
+        if body.get("append"):
+            argv += ["--append"]
+        if body.get("model"):
+            argv += ["--model", body["model"]]
+        actions["hooks"] = argv
+
     if action not in actions:
         return jsonify({"error": "unknown action"}), 400
     job_id = _start_job(action, actions[action])
     return jsonify({"job_id": job_id})
+
+
+@app.route("/api/llm-providers")
+def api_llm_providers():
+    """Detect installed LLM CLIs."""
+    from . import llm
+    return jsonify({"installed": llm.installed_providers()})
 
 
 @app.route("/api/job/<job_id>")
@@ -177,14 +197,14 @@ def api_connect_youtube():
     privacy=private, and let the user's browser do OAuth."""
     c = cfg()
     if not c.client_secret_path.exists():
-        return jsonify({"error": "client_secret.json missing — see SETUP.md"}), 400
+        return jsonify({"error": "client_secret.json missing, see SETUP.md"}), 400
     py = sys.executable
     argv = [
         py, "-m", "shortsmith.cli", "-c", str(c.project_root / "config.yaml"),
         "upload", "--count", "1", "--privacy", "private",
     ]
     job_id = _start_job("connect", argv)
-    return jsonify({"job_id": job_id, "note": "browser will open — sign in"})
+    return jsonify({"job_id": job_id, "note": "browser will open, sign in"})
 
 
 @app.route("/api/config", methods=["GET", "POST"])
