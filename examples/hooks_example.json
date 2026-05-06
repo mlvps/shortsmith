@@ -1,0 +1,90 @@
+[
+  {
+    "hook": "okay but you forgot you wanted to be shredded by summer",
+    "cta_segments": [
+      {"text": "stop coping. "},
+      {"text": "track", "hl": "yellow"},
+      {"text": " your peptides with "},
+      {"text": "bo", "hl": "purple"}
+    ]
+  },
+  {
+    "hook": "still scrolling? summer's in 3 months bro",
+    "cta_segments": [
+      {"text": "log it or "},
+      {"text": "stay soft", "hl": "yellow"},
+      {"text": ". get "},
+      {"text": "bo", "hl": "purple"}
+    ]
+  },
+  {
+    "hook": "this won't make your shirt fit better in june",
+    "cta_segments": [
+      {"text": "actually "},
+      {"text": "get shredded", "hl": "green"},
+      {"text": ". track with "},
+      {"text": "bo", "hl": "purple"}
+    ]
+  },
+  {
+    "hook": "you been saying 'next monday' since february",
+    "cta_segments": [
+      {"text": "make today the monday. "},
+      {"text": "lock in", "hl": "yellow"},
+      {"text": " with "},
+      {"text": "bo", "hl": "purple"}
+    ]
+  },
+  {
+    "hook": "imagine being on the beach looking like that",
+    "cta_segments": [
+      {"text": "or "},
+      {"text": "get lean", "hl": "green"},
+      {"text": ". use "},
+      {"text": "bo", "hl": "purple"}
+    ]
+  },
+  {
+    "hook": "your future self is begging you to lock in",
+    "cta_segments": [
+      {"text": "answer them. "},
+      {"text": "track", "hl": "yellow"},
+      {"text": " with "},
+      {"text": "bo", "hl": "purple"}
+    ]
+  },
+  {
+    "hook": "abs by june? you on track or coping",
+    "cta_segments": [
+      {"text": "stop coping. "},
+      {"text": "log it", "hl": "yellow"},
+      {"text": ". get "},
+      {"text": "bo", "hl": "purple"}
+    ]
+  },
+  {
+    "hook": "fr your stack only works if you actually take it",
+    "cta_segments": [
+      {"text": "dial in your protocol. get "},
+      {"text": "bo", "hl": "purple"}
+    ]
+  },
+  {
+    "hook": "you been 'bulking' since the last marvel movie was good",
+    "cta_segments": [
+      {"text": "actually "},
+      {"text": "get shredded", "hl": "green"},
+      {"text": ". use "},
+      {"text": "bo", "hl": "purple"}
+    ]
+  },
+  {
+    "hook": "stop expecting abs to find you",
+    "cta_segments": [
+      {"text": "make the shirt fit. "},
+      {"text": "lock in", "hl": "yellow"},
+      {"text": " with "},
+      {"text": "bo", "hl": "purple"}
+    ]
+  }
+]

@@ -1,0 +1,40 @@
+# Project state — never commit
+config.yaml
+client_secret.json
+token.json
+analyze_token.json
+uploaded.json
+priority.json
+pairings.json
+.ntfy_topic
+
+# Generated content
+source/*.mp4
+source/*.txt
+source/_ids.txt
+out/*.mp4
+final/*.mp4
+template/*.mov
+template/*.mp4
+reports/*.md
+
+# Logs
+*.log
+*.err
+health.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.venv/
+venv/
+build/
+dist/
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp

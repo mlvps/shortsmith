@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>shortsmith</title>
+<style>
+  :root {
+    --bg: #0d0e10;
+    --panel: #15171a;
+    --panel-2: #1c1f23;
+    --border: #2a2e34;
+    --text: #e8eaed;
+    --muted: #8b9098;
+    --accent: #ffc72e;
+    --green: #9ee5bd;
+    --red: #ff6b6b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.5;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 32px 24px 96px; }
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 32px; padding-bottom: 16px; border-bottom: 1px solid var(--border);
+  }
+  h1 { margin: 0; font-size: 22px; letter-spacing: -0.01em; }
+  h1 .dot { color: var(--accent); }
+  .badge {
+    display: inline-block; padding: 4px 10px; font-size: 11px; border-radius: 4px;
+    background: var(--panel-2); color: var(--muted); font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .badge.ok { color: var(--green); }
+  .badge.err { color: var(--red); }
+  .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 10px; padding: 18px 20px;
+  }
+  .card h2 { margin: 0 0 6px; font-size: 12px; text-transform: uppercase;
+             letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+  .card .big { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; }
+  .card .sub { font-size: 13px; color: var(--muted); }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 24px; }
+  button, .btn {
+    background: var(--panel); border: 1px solid var(--border); color: var(--text);
+    padding: 10px 16px; border-radius: 8px; font-size: 13px; cursor: pointer;
+    font-family: inherit; transition: all 0.15s;
+  }
+  button:hover { border-color: var(--accent); color: var(--accent); }
+  button.primary { background: var(--accent); color: #1a1300; border-color: var(--accent); font-weight: 600; }
+  button.primary:hover { background: #ffd055; color: #1a1300; }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  section { margin-top: 36px; }
+  section > h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em;
+                 color: var(--muted); font-weight: 600; margin: 0 0 12px; }
+  .upload-list { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .upload-list .row-item {
+    padding: 14px 18px; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  }
+  .upload-list .row-item:last-child { border-bottom: 0; }
+  .upload-list .hook { font-size: 14px; flex: 1; }
+  .upload-list a { color: var(--accent); text-decoration: none; font-size: 12px; }
+  .upload-list a:hover { text-decoration: underline; }
+  .upload-list .when { color: var(--muted); font-size: 12px; }
+  pre.log {
+    background: #07080a; border: 1px solid var(--border); border-radius: 8px;
+    padding: 14px 16px; font-family: "SF Mono", Menlo, monospace; font-size: 12px;
+    color: #c5c8cc; overflow: auto; max-height: 320px; line-height: 1.5;
+    white-space: pre-wrap;
+  }
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; background: var(--panel-2);
+    border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px;
+    font-size: 13px; max-width: 360px; opacity: 0; transition: opacity 0.2s;
+  }
+  .toast.show { opacity: 1; }
+  .alert {
+    background: rgba(255, 107, 107, 0.1); border: 1px solid var(--red);
+    color: var(--red); padding: 12px 16px; border-radius: 8px; margin-bottom: 24px;
+    font-size: 13px;
+  }
+  .alert.warn {
+    background: rgba(255, 199, 46, 0.08); border-color: var(--accent); color: var(--accent);
+  }
+  details { margin-top: 16px; }
+  summary { cursor: pointer; color: var(--muted); font-size: 12px; }
+  textarea {
+    width: 100%; min-height: 320px; background: #07080a; color: var(--text);
+    border: 1px solid var(--border); border-radius: 8px; padding: 12px;
+    font-family: "SF Mono", Menlo, monospace; font-size: 12px; line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1><span class="dot">●</span> shortsmith</h1>
+    <span id="yt-badge" class="badge">checking…</span>
+  </header>
+
+  <div id="setup-alert"></div>
+
+  <div class="grid" id="stats"></div>
+
+  <section>
+    <h2>Pipeline actions</h2>
+    <div class="row">
+      <button onclick="run('download')">📥 Download source</button>
+      <button onclick="run('generate')">🎨 Generate clips</button>
+      <button onclick="run('stitch')">🪡 Stitch finals</button>
+      <button class="primary" onclick="upload()">🚀 Upload now</button>
+      <button onclick="run('analyze')">📊 Analyze</button>
+      <button onclick="run('healthcheck')">❤️ Health check</button>
+      <button id="connect-btn" onclick="connect()">🔗 Connect YouTube</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>Recent uploads</h2>
+    <div id="recent" class="upload-list"></div>
+  </section>
+
+  <section>
+    <h2>Live logs</h2>
+    <details open>
+      <summary>upload.log</summary>
+      <pre class="log" id="log-upload"></pre>
+    </details>
+    <details>
+      <summary>upload.err</summary>
+      <pre class="log" id="log-upload-err"></pre>
+    </details>
+    <details>
+      <summary>analyze.log</summary>
+      <pre class="log" id="log-analyze"></pre>
+    </details>
+    <details>
+      <summary>health.log</summary>
+      <pre class="log" id="log-health"></pre>
+    </details>
+  </section>
+
+  <section>
+    <h2>Config (config.yaml)</h2>
+    <textarea id="cfg-editor"></textarea>
+    <div class="row" style="margin-top: 12px;">
+      <button onclick="saveConfig()">💾 Save config</button>
+      <span id="cfg-msg" style="color: var(--muted); font-size: 12px; align-self: center;"></span>
+    </div>
+  </section>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+
+function toast(msg, ok = true) {
+  const t = $("toast");
+  t.textContent = msg;
+  t.style.borderColor = ok ? "var(--green)" : "var(--red)";
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 3500);
+}
+
+async function refresh() {
+  const r = await fetch("/api/status");
+  const s = await r.json();
+
+  $("yt-badge").textContent = s.yt_connected ? "youtube connected" : "not connected";
+  $("yt-badge").className = "badge " + (s.yt_connected ? "ok" : "err");
+  $("connect-btn").style.display = s.yt_connected ? "none" : "inline-block";
+
+  let alerts = "";
+  if (!s.has_client_secret) {
+    alerts += `<div class="alert">⚠ Missing <code>client_secret.json</code>. See <code>docs/SETUP.md</code> for OAuth setup steps.</div>`;
+  }
+  if (!s.template_exists) {
+    alerts += `<div class="alert warn">⚠ Template video not found at <code>${s.template_path}</code>. Drop your end-clip there.</div>`;
+  }
+  if (s.counts.hooks === 0) {
+    alerts += `<div class="alert warn">⚠ No hooks in <code>hooks.json</code>. Generate or write some first.</div>`;
+  }
+  $("setup-alert").innerHTML = alerts;
+
+  $("stats").innerHTML = [
+    card("Hooks", s.counts.hooks, "in hooks.json"),
+    card("Source clips", s.counts.sources, "downloaded"),
+    card("End-clips", s.counts.clips, "rendered in out/"),
+    card("Stitched", s.counts.final, "ready in final/"),
+    card("Uploaded", s.counts.uploaded, `of ${s.counts.final} (${pct(s.counts.uploaded, s.counts.final)}%)`),
+  ].join("");
+
+  $("recent").innerHTML = s.recent_uploads.length
+    ? s.recent_uploads.map(rowItem).join("")
+    : `<div class="row-item"><div class="hook" style="color: var(--muted);">No uploads yet.</div></div>`;
+}
+
+function card(title, big, sub) {
+  return `<div class="card"><h2>${title}</h2>
+          <div class="big">${big}</div><div class="sub">${sub}</div></div>`;
+}
+function rowItem(r) {
+  const when = r.uploaded_at ? new Date(r.uploaded_at).toLocaleString() : "?";
+  return `<div class="row-item">
+    <div class="hook">${escape(r.hook || "(no hook)")}</div>
+    <div class="when">${when}</div>
+    <a href="${r.url}" target="_blank">open ↗</a>
+  </div>`;
+}
+function pct(a, b) { return b ? Math.round(100 * a / b) : 0; }
+function escape(s) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+
+async function refreshLogs() {
+  const r = await fetch("/api/logs");
+  const l = await r.json();
+  $("log-upload").textContent = l.upload || "(empty)";
+  $("log-upload-err").textContent = l.upload_err || "(empty)";
+  $("log-analyze").textContent = l.analyze || "(empty)";
+  $("log-health").textContent = l.health || "(empty)";
+}
+
+async function run(action) {
+  toast(`starting ${action}…`);
+  const r = await fetch(`/api/run/${action}`, { method: "POST", headers: {"Content-Type": "application/json"}, body: "{}" });
+  if (!r.ok) { toast("failed to start", false); return; }
+  const j = await r.json();
+  pollJob(j.job_id, action);
+}
+async function upload() {
+  const n = parseInt(prompt("How many videos to upload?", "1") || "0", 10);
+  if (!n) return;
+  toast(`uploading ${n}…`);
+  const r = await fetch("/api/run/upload", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({count: n}) });
+  if (!r.ok) { toast("failed to start", false); return; }
+  const j = await r.json();
+  pollJob(j.job_id, `upload ${n}`);
+}
+async function connect() {
+  toast("opening browser for OAuth…");
+  const r = await fetch("/api/connect-youtube", { method: "POST" });
+  if (!r.ok) {
+    const e = await r.json();
+    toast(e.error || "failed", false);
+    return;
+  }
+  const j = await r.json();
+  pollJob(j.job_id, "connect");
+}
+async function pollJob(id, label) {
+  const tick = async () => {
+    const r = await fetch(`/api/job/${id}`);
+    const j = await r.json();
+    if (j.status === "done") { toast(`${label} done ✓`); refresh(); refreshLogs(); return; }
+    if (j.status === "failed") { toast(`${label} failed (rc=${j.returncode})`, false); refreshLogs(); return; }
+    setTimeout(tick, 1500);
+  };
+  tick();
+}
+
+async function loadConfig() {
+  const r = await fetch("/api/config");
+  const j = await r.json();
+  $("cfg-editor").value = j.yaml || "";
+}
+async function saveConfig() {
+  const r = await fetch("/api/config", {
+    method: "POST", headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({yaml: $("cfg-editor").value}),
+  });
+  const j = await r.json();
+  $("cfg-msg").textContent = j.ok ? "saved · " + (j.note || "") : "save failed";
+}
+
+refresh();
+refreshLogs();
+loadConfig();
+setInterval(refresh, 5000);
+setInterval(refreshLogs, 6000);
+</script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+# shortsmith — configuration
+#
+# Copy this file to `config.yaml` and edit. All paths are resolved relative
+# to the project root unless absolute.
+
+# ─── Source content ──────────────────────────────────────────────────────────
+# YouTube channel whose Shorts will be used as the "hook" half of each video.
+# Pick a channel with viral, fast-paced, attention-grabbing content. Some
+# proven niches that work well for stitching:
+#   - 3D explainer animations  (e.g., @AlphaPhoenixVideos)
+#   - oddly satisfying clips   (e.g., @OddlySatisfying)
+#   - dance / movement edits   (any high-energy dance channel)
+#   - skill compilations       (woodworking, cooking, sports)
+#
+# Whatever you choose, scroll the channel's Shorts tab first and ask:
+# "would I stop scrolling on this?" If no, pick a different channel.
+source:
+  channel_url: "https://www.youtube.com/@OddlySatisfying/shorts"
+  count: 500              # how many Shorts to download
+  download_parallel: 2    # higher → more bot-detection risk
+
+# ─── Your end-clip template ──────────────────────────────────────────────────
+# A single video clip of your product / app / mascot, recorded once.
+# Roughly 5-8 seconds, 9:16 or close. shortsmith pads non-9:16 with a white
+# caption box on top.
+template:
+  path: "template/template.mov"
+  # Total length the end-clip should occupy in the final stitched output.
+  # The hook captions cross-fade at exactly half this duration.
+  duration_seconds: 5.5
+
+# ─── Caption styling ─────────────────────────────────────────────────────────
+caption:
+  font_path: "/System/Library/Fonts/Supplemental/Arial Bold.ttf"
+  font_size: 58
+  box_height_px: 480       # height of the white caption box on top
+  box_width_px: 1080       # match your template width
+  padding_x_px: 60
+  line_spacing_px: 14
+  max_chars_per_line: 26
+
+# Highlight colors for words in the CTA. Keys are referenced from hooks.json
+# via {"hl": "yellow"}.
+highlight_colors:
+  yellow: [255, 199, 46]   # warm amber — power verbs (track, log, lock in)
+  green:  [158, 229, 189]  # mint — aspirational outcomes (shredded, lean)
+  purple: [219, 209, 247]  # lilac — your brand name
+
+# ─── Hook + CTA generation ───────────────────────────────────────────────────
+# `hooks.json` holds the variations. Each entry has {hook, cta_segments}.
+# `cta_suffix` is auto-appended after every CTA — set to your app store /
+# website / handle.
+cta_suffix: " (it's on the app store)"
+
+# ─── Output specs ────────────────────────────────────────────────────────────
+output:
+  width: 1080
+  height: 1920
+  fps: 30
+  hook_fade_start: 2.3     # seconds into end-clip when hook fades out
+  hook_fade_duration: 0.2
+  cta_fade_start: 2.3
+  cta_fade_duration: 0.2
+  audio_fade_out_start: 5.0
+  audio_fade_out_duration: 0.5
+
+# ─── Upload schedule ─────────────────────────────────────────────────────────
+upload:
+  videos_per_day: 3
+  # Times of day (24h, local) to fire each upload trigger. One video per slot.
+  schedule_hours: [9, 13, 19]
+  default_privacy: "public"   # private | unlisted | public
+  category_id: "22"           # YouTube category — 22 = People & Blogs
+  default_tags:
+    - "shorts"
+    - "fyp"
+
+# ─── Notifications (optional) ────────────────────────────────────────────────
+# Free push notifications via ntfy.sh — install the iOS/Android app, pick an
+# unguessable topic name, subscribe, then put the topic here.
+ntfy:
+  topic: ""   # e.g. "shortsmith-melv-7k9q2x" — leave empty to disable
+
+# ─── Analytics agent ─────────────────────────────────────────────────────────
+analyze:
+  winner_multiplier: 2.5     # video must score >= median * this to be a winner
+  winner_min_hours: 18       # need at least this many hours live before scoring
+  amplify_per_winner: 3      # how many similar hooks to bump per winner
+
+# ─── Paths ───────────────────────────────────────────────────────────────────
+paths:
+  source_dir: "source"
+  out_dir: "out"
+  final_dir: "final"
+  reports_dir: "reports"
+  hooks_file: "hooks.json"
+  uploaded_file: "uploaded.json"
+  priority_file: "priority.json"
+  client_secret: "client_secret.json"
+  upload_token: "token.json"
+  analyze_token: "analyze_token.json"
